@@ -14,7 +14,12 @@ Module Program
     End Sub
 
     Public Function Main() As Integer
-        Dim label As Boolean = True
+
+        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot.SaveAs("H:\ManhattanPlot\manhattan_plot_test.png", ImageFormats.Png)
+
+        End
+
+        Dim label As Boolean = False
         Dim eq As Boolean = False
         Dim data = "C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.csv".LoadCsv(Of SNP)
         Dim method As String = "asdadg"
@@ -31,6 +36,8 @@ Module Program
         Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.png", ImageFormats.Png)
         Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.png", ImageFormats.Png)
         Call "C:\Users\xieguigang\Desktop\8.23\sp\GMAF.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\GMAF.png", ImageFormats.Png)
+
+
 
         Pause()
         Return GetType(Program).RunCLI(App.CommandLine)

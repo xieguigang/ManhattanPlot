@@ -36,8 +36,8 @@ Public Module Canvas
         {"20", 6325520},
         {"21", 48129895},
         {"22", 51304566},
-        {"X", 156040895},
-        {"Y", 57227415}
+        {"X", 156040895}, {"23", 156040895},
+        {"Y", 57227415}, {"24", 156040895}
     }
 
     Public Function nln(x As Double) As Double
@@ -189,17 +189,23 @@ Public Module Canvas
             Dim r As Double = ptSize / 2
 
             For Each chromsome In chrData
+                Dim chrName As String = chromsome.Name
                 Dim relLen As Integer() = chromsome.x.ToArray(Function(x) x.Position)
-                Dim l As Integer = If(relative, relLen.Max - relLen.Min, Chromosomes(chromsome.Name))
+                Dim l As Integer = If(relative, relLen.Max - relLen.Min, Chromosomes(chrName))
                 Dim max As Integer = If(equidistant, ed, (width - 2 * margin.Width) * (l / total))  '  最大的长度
 
                 If l = 0 AndAlso relLen.Length = 1 Then
                     l = relLen(Scan0)
                 End If
+                If chrName = "23" Then
+                    chrName = "X"
+                ElseIf chrName = "24" Then
+                    chrName = "Y"
+                End If
 
                 g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Height), New Point(xLeft + max, height - margin.Height - 5))
-                fsz = g.MeasureString(chromsome.Name, font)
-                g.DrawString(chromsome.Name, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 15))
+                fsz = g.MeasureString(chrName, font)
+                g.DrawString(chrName, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 15))
 
                 For Each snp As SNP In chromsome.x
                     Dim x As Integer = max * (If(relative, snp.Position - relLen.Min, snp.Position) / l) + xLeft
