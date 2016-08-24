@@ -1,7 +1,9 @@
 ﻿Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Linq
+Imports Microsoft.VisualBasic
 
 Public Module Canvas
 
@@ -64,6 +66,53 @@ Public Module Canvas
                 Call g.FillRectangle(New SolidBrush(cls(name.i)), New Rectangle(left, h, 100, fsz.Height))
                 Call g.DrawString(name.obj, font, Brushes.Black, New Point(left + 110, h))
                 h += fsz.Height
+            Next
+
+            Dim gData = From x As SNP
+                        In data
+                        Select x
+                        Group x By x.Chr Into Group
+                        Order By Chr Ascending
+
+            Dim total As Long = 0
+            Dim chrData As New List(Of NamedValue(Of SNP()))
+
+            For Each chromsome In gData
+                Dim id As String = chromsome.Chr.ToUpper
+
+                total += Canvas.Chromosomes(id)
+                chrData += New NamedValue(Of SNP()) With {
+                    .Name = id,
+                    .x = LinqAPI.Exec(Of SNP) <= From x As SNP
+                                                 In chromsome.Group
+                                                 Select x
+                                                 Order By x.Position Ascending
+                    }
+            Next
+
+            Dim xLeft As Integer = 0
+            Dim maxY As Double = chrData _
+                .Select(Function(x) x.x _
+                .Select(Function(o) o.pvalues.Values) _
+                .MatrixAsIterator) _
+                .MatrixAsIterator _
+                .Where(Function(n) Not Double.IsNaN(n)).Min  ' pvalue越小则-log越大
+            maxY = -Math.Log(maxY) + 1.5
+
+            For Each chromsome In chrData
+                Dim l As Integer = Chromosomes(chromsome.Name)
+                Dim max As Integer = width * (l / total)  '  最大的长度
+
+                For Each snp As SNP In chromsome.x
+                    Dim x As Integer = max * (snp.Position / l) + xLeft
+
+                    For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
+                        Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY)
+                        Call g.FillPie(Brushes.Brown, New Rectangle(x, y, 10, 10), 0, 360)
+                    Next
+                Next
+
+                xLeft += max
             Next
         End Using
 
