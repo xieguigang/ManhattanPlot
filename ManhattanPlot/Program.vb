@@ -12,10 +12,10 @@ Module Program
     End Sub
 
     Public Function Main() As Integer
-        Dim data = "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP)
-        Dim img = data.Plot(equidistant:=True)
-        Call img.SaveAs("H:\ManhattanPlot\manhattan_plot_test.png", ImageFormats.Png)
-
+        Dim data = "C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.csv".LoadCsv(Of SNP)
+        Dim img = data.Plot()
+        Call img.SaveAs("C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.png", ImageFormats.Png)
+        Pause()
         Return GetType(Program).RunCLI(App.CommandLine)
     End Function
 End Module

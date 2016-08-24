@@ -56,7 +56,8 @@ Public Module Canvas
                          Optional margin As Size = Nothing,
                          Optional ptSize As Integer = 10,
                          Optional showDebugLabel As Boolean = False,
-                         Optional equidistant As Boolean = False) As Bitmap
+                         Optional equidistant As Boolean = False,
+                         Optional relative As Boolean = True) As Bitmap
 
         Dim bmp As New Bitmap(width, height)
         Dim cls As Color() = If(colors.IsNullOrEmpty,
@@ -99,8 +100,9 @@ Public Module Canvas
 
             For Each chromsome In gData
                 Dim id As String = chromsome.Chr.ToUpper
+                Dim relLen As Integer() = chromsome.Group.ToArray(Function(x) x.Position)
 
-                total += Canvas.Chromosomes(id)
+                total += If(relative, relLen.Max - relLen.Min, Canvas.Chromosomes(id))
                 chrData += New NamedValue(Of SNP()) With {
                     .Name = id,
                     .x = LinqAPI.Exec(Of SNP) <= From x As SNP
@@ -134,16 +136,23 @@ Public Module Canvas
             Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
 
             For Each chromsome In chrData
-                Dim l As Integer = Chromosomes(chromsome.Name)
+                Dim relLen As Integer() = chromsome.x.ToArray(Function(x) x.Position)
+                Dim l As Integer = If(relative, relLen.Max - relLen.Min, Chromosomes(chromsome.Name))
                 Dim max As Integer = If(equidistant, ed, (width - 2 * margin.Width) * (l / total))  '  最大的长度
+
+                If l = 0 AndAlso relLen.Length = 1 Then
+                    l = relLen(Scan0)
+                End If
 
                 g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Height), New Point(xLeft + max, height - margin.Height - 5))
                 fsz = g.MeasureString(chromsome.Name, font)
                 g.DrawString(chromsome.Name, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 5))
 
                 For Each snp As SNP In chromsome.x
-                    Dim x As Integer = max * (snp.Position / l) + xLeft
-
+                    Dim x As Integer = max * (If(relative, snp.Position - relLen.Min, snp.Position) / l) + xLeft
+#If DEBUG Then
+                    Call $"{snp.Position} -> {x}".__DEBUG_ECHO
+#End If
                     For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
                         Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY) - 2 * margin.Height
                         Dim label As String = $"{snp.Gene} ({sample.Key})"
