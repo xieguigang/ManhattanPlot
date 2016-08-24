@@ -143,7 +143,7 @@ Public Module Canvas
                 Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
             Next
 
-            Dim labelFont As New Font(FontFace.BookmanOldStyle, 4)
+            Dim labelFont As New Font(FontFace.BookmanOldStyle, 10)
             Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
 
             font = New Font(FontFace.MicrosoftYaHei, 24, FontStyle.Regular)

@@ -19,8 +19,14 @@ Module Program
             {"EAS vs. AFR", "DarkSlateBlue"},
             {"EAS vs. AMR", "Gold"}
         }
-        Dim img = data.Plot(equidistant:=True, colors:=colors)
+        Dim img = data.Plot(equidistant:=True, colors:=colors, ptSize:=25)
         Call img.SaveAs("C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.png", ImageFormats.Png)
+
+        Call "C:\Users\xieguigang\Desktop\8.23\sp\AFR vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=True, colors:=colors, ptSize:=25, showDebugLabel:=True).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\AFR vs. AMR.png", ImageFormats.Png)
+        Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.csv".LoadCsv(Of SNP).Plot(equidistant:=True, colors:=colors, ptSize:=25, showDebugLabel:=True).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.png", ImageFormats.Png)
+        Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=True, colors:=colors, ptSize:=25, showDebugLabel:=True).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.png", ImageFormats.Png)
+        Call "C:\Users\xieguigang\Desktop\8.23\sp\GMAF.csv".LoadCsv(Of SNP).Plot(equidistant:=True, colors:=colors, ptSize:=25, showDebugLabel:=True).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\GMAF.png", ImageFormats.Png)
+
         Pause()
         Return GetType(Program).RunCLI(App.CommandLine)
     End Function
