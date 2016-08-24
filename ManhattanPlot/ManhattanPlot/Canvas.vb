@@ -50,8 +50,8 @@ Public Module Canvas
     ''' <returns></returns>
     <Extension>
     Public Function Plot(data As IEnumerable(Of SNP),
-                         Optional width As Integer = 1024,
-                         Optional height As Integer = 768,
+                         Optional width As Integer = 3000,
+                         Optional height As Integer = 1440,
                          Optional colors As String() = Nothing,
                          Optional margin As Size = Nothing) As Bitmap
 
@@ -61,24 +61,27 @@ Public Module Canvas
             colors.ToArray(AddressOf ToColor))
 
         If margin.IsEmpty Then
-            margin = New Size(15, 15)
+            margin = New Size(15, 25)
         End If
 
         Using g As Graphics = Graphics.FromImage(bmp)
             Dim serials As IEnumerable(Of String) = data.First.pvalues.Keys   ' 先绘制出系列的名称
-            Dim h As Integer = 0
-            Dim left As Integer = width - 200
-            Dim font As New Font(FontFace.Cambria, 12, FontStyle.Regular)
+            Dim h As Integer = margin.Height
+            Dim left As Integer = width - 300
+            Dim font As New Font(FontFace.MicrosoftYaHei, 12, FontStyle.Regular)
             Dim fsz As SizeF = g.MeasureString("0", font)
             Dim sampleBrush As New Dictionary(Of String, SolidBrush)
 
-            For Each name As SeqValue(Of String) In serials.SeqIterator
+            g.CompositingQuality = Drawing2D.CompositingQuality.HighQuality
+            g.FillRectangle(Brushes.White, New Rectangle(New Point, New Size(width, height)))
+
+            For Each name As SeqValue(Of String) In serials.SeqIterator   ' legend绘制
                 Dim br As SolidBrush = New SolidBrush(cls(name.i))
 
                 Call g.FillRectangle(br, New Rectangle(left, h, 100, fsz.Height))
                 Call g.DrawString(name.obj, font, Brushes.Black, New Point(left + 110, h))
 
-                h += fsz.Height
+                h += fsz.Height + 10
                 sampleBrush(name.obj) = br
             Next
 
@@ -112,20 +115,37 @@ Public Module Canvas
                 .MatrixAsIterator _
                 .Where(Function(n) Not Double.IsNaN(n)).Min  ' pvalue越小则-log越大
             maxY = -Math.Log(maxY) + 1
+            chrData = New List(Of NamedValue(Of SNP()))(chrData.OrderBy(Function(x) Val(x.Name)))
 
             ' 绘制X轴
             Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(width - margin.Width, height - margin.Height))
+            ' 绘制y轴
+            Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(margin.Width, margin.Height))
+
+            For iy As Double = 0.5 To maxY Step (maxY / 10)
+                Dim y As Integer = height - height * ((-Math.Log(iy)) / maxY) - 2 * margin.Height
+                Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
+            Next
+
+            Dim labelFont As New Font(FontFace.BookmanOldStyle, 8)
 
             For Each chromsome In chrData
                 Dim l As Integer = Chromosomes(chromsome.Name)
                 Dim max As Integer = (width - 2 * margin.Width) * (l / total)  '  最大的长度
+
+                g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Height), New Point(xLeft + max, height - margin.Height - 5))
+                fsz = g.MeasureString(chromsome.Name, font)
+                g.DrawString(chromsome.Name, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 5))
 
                 For Each snp As SNP In chromsome.x
                     Dim x As Integer = max * (snp.Position / l) + xLeft
 
                     For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
                         Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY) - 2 * margin.Height
-                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x, y, 10, 10), 0, 360)
+                        Dim label As String = $"{snp.Gene} ({sample.Key})"
+
+                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x, y, 20, 20), 0, 360)
+                        Call g.DrawString(label, labelFont, Brushes.LightGray, New Point(x + 22, y + 10))
                     Next
                 Next
 
