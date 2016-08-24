@@ -40,6 +40,27 @@ Public Module Canvas
         {"Y", 57227415}
     }
 
+    Public Function nln(x As Double) As Double
+        Return -Math.Log(x)
+    End Function
+
+    Public Function nlog(x As Double) As Double
+        Return -Math.Log(x, 10)
+    End Function
+
+    Public Function raw(x As Double) As Double
+        Return x
+    End Function
+
+    Public Function GetValueMethod(name As String) As Func(Of Double, Double)
+        Select Case name.ToLower
+            Case "ln" : Return AddressOf nln
+            Case "log" : Return AddressOf nlog
+            Case Else
+                Return AddressOf raw
+        End Select
+    End Function
+
     ''' <summary>
     ''' 
     ''' </summary>
@@ -47,6 +68,7 @@ Public Module Canvas
     ''' <param name="width"></param>
     ''' <param name="height"></param>
     ''' <param name="colors">colorName/rgb(a,r,g,b)</param>
+    ''' <param name="ylog">``ln``, ``log``, ``raw``</param>
     ''' <returns></returns>
     <Extension>
     Public Function Plot(data As IEnumerable(Of SNP),
@@ -57,7 +79,8 @@ Public Module Canvas
                          Optional ptSize As Integer = 10,
                          Optional showDebugLabel As Boolean = False,
                          Optional equidistant As Boolean = False,
-                         Optional relative As Boolean = False) As Bitmap
+                         Optional relative As Boolean = False,
+                         Optional ylog As String = "ln") As Bitmap
 
         Dim bmp As New Bitmap(width, height)
 
@@ -65,6 +88,7 @@ Public Module Canvas
             margin = New Size(100, 50)
         End If
 
+        Dim log As Func(Of Double, Double) = GetValueMethod(ylog)
         Dim colorList As New Dictionary(Of String, Color)
 
         If colors.IsNullOrEmpty Then
@@ -130,26 +154,39 @@ Public Module Canvas
                 .MatrixAsIterator) _
                 .MatrixAsIterator _
                 .Where(Function(n) Not Double.IsNaN(n)).Min  ' pvalue越小则-log越大
-            maxY = -Math.Log(maxY) + 1
+            maxY = log(maxY) + 1
             chrData = New List(Of NamedValue(Of SNP()))(chrData.OrderBy(Function(x) Val(x.Name)))
             font = New Font(FontFace.MicrosoftYaHei, 24, FontStyle.Regular)
+            ylog = ylog.ToLower
 
             ' 绘制X轴
             Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(width - margin.Width, height - margin.Height))
             ' 绘制y轴
             Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(margin.Width, margin.Height))
 
-            For iy As Double = 1 To maxY
-                Dim y As Integer = height - height * (iy / maxY) - margin.Height
+            If ylog <> "ln" AndAlso ylog <> "log" Then
+                For iy As Double = 0 To maxY Step 0.25
+                    Dim y As Integer = height - height * (iy / maxY) - margin.Height
 
-                fsz = g.MeasureString(iy, font)
+                    fsz = g.MeasureString(iy, font)
 
-                Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
-                Call g.DrawString(iy, font, Brushes.Black, New Point(25, y - fsz.Height / 2))
-            Next
+                    Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
+                    Call g.DrawString(iy, font, Brushes.Black, New Point(15, y - fsz.Height / 2))
+                Next
+            Else
+                For iy As Double = 1 To maxY
+                    Dim y As Integer = height - height * (iy / maxY) - margin.Height
+
+                    fsz = g.MeasureString(iy, font)
+
+                    Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
+                    Call g.DrawString(iy, font, Brushes.Black, New Point(25, y - fsz.Height / 2))
+                Next
+            End If
 
             Dim labelFont As New Font(FontFace.BookmanOldStyle, 16, FontStyle.Bold)
             Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
+            Dim r As Double = ptSize / 2
 
             For Each chromsome In chrData
                 Dim relLen As Integer() = chromsome.x.ToArray(Function(x) x.Position)
@@ -168,10 +205,10 @@ Public Module Canvas
                     Dim x As Integer = max * (If(relative, snp.Position - relLen.Min, snp.Position) / l) + xLeft
 
                     For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
-                        Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY) - margin.Height
+                        Dim y As Integer = height - height * ((log(sample.Value)) / maxY) - margin.Height
                         Dim label As String = $"{snp.Gene} ({sample.Key})"
 
-                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x, y, ptSize, ptSize), 0, 360)
+                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x - r, y - r, ptSize, ptSize), 0, 360)
                         If showDebugLabel Then
                             Call g.DrawString(label,
                                               labelFont,
