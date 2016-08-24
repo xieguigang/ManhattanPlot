@@ -40,6 +40,36 @@ Public Module Canvas
         {"Y", 57227415}, {"24", 156040895}
     }
 
+    Public ReadOnly Property ChromosomeColors As New Dictionary(Of String, SolidBrush) From {
+        {"1", New SolidBrush(Color.FromArgb(239, 80, 84))},
+        {"2", New SolidBrush(Color.FromArgb(80, 94, 169))},
+        {"3", New SolidBrush(Color.FromArgb(200, 103, 170))},
+        {"4", New SolidBrush(Color.FromArgb(246, 174, 177))},
+        {"5", New SolidBrush(Color.FromArgb(132, 132, 132))},
+        {"6", New SolidBrush(Color.FromArgb(198, 34, 43))},
+        {"7", New SolidBrush(Color.FromArgb(34, 66, 153))},
+        {"8", New SolidBrush(Color.FromArgb(39, 180, 76))},
+        {"9", New SolidBrush(Color.FromArgb(199, 192, 50))},
+        {"10", New SolidBrush(Color.FromArgb(164, 55, 148))},
+        {"11", New SolidBrush(Color.FromArgb(9, 187, 191))},
+        {"12", New SolidBrush(Color.FromArgb(64, 64, 64))},
+        {"13", New SolidBrush(Color.FromArgb(239, 54, 66))},
+        {"14", New SolidBrush(Color.FromArgb(71, 88, 168))},
+        {"15", New SolidBrush(Color.FromArgb(193, 91, 164))},
+        {"16", New SolidBrush(Color.FromArgb(195, 197, 192))},
+        {"17", New SolidBrush(Color.FromArgb(128, 22, 24))},
+        {"18", New SolidBrush(Color.FromArgb(44, 46, 123))},
+        {"19", New SolidBrush(Color.FromArgb(7, 129, 70))},
+        {"20", New SolidBrush(Color.FromArgb(123, 135, 53))},
+        {"21", New SolidBrush(Color.FromArgb(131, 41, 129))},
+        {"22", New SolidBrush(Color.FromArgb(3, 133, 133))},
+        {"X", New SolidBrush(Color.SkyBlue)}, {"23", New SolidBrush(Color.SkyBlue)},
+        {"Y", New SolidBrush(Color.Lime)}, {"24", New SolidBrush(Color.Lime)}
+    }
+
+    ReadOnly __odds As New SolidBrush(Color.Orange)
+    ReadOnly __evens As New SolidBrush(Color.Black)
+
     Public Function nln(x As Double) As Double
         Return -Math.Log(x)
     End Function
@@ -69,6 +99,7 @@ Public Module Canvas
     ''' <param name="height"></param>
     ''' <param name="colors">colorName/rgb(a,r,g,b)</param>
     ''' <param name="ylog">``ln``, ``log``, ``raw``</param>
+    ''' <param name="colorPattern">``chr``, ``sampleName``, ``interval``</param>
     ''' <returns></returns>
     <Extension>
     Public Function Plot(data As IEnumerable(Of SNP),
@@ -80,16 +111,25 @@ Public Module Canvas
                          Optional showDebugLabel As Boolean = False,
                          Optional equidistant As Boolean = False,
                          Optional relative As Boolean = False,
-                         Optional ylog As String = "ln") As Bitmap
+                         Optional ylog As String = "ln",
+                         Optional colorPattern As String = "chr") As Bitmap
 
         Dim bmp As New Bitmap(width, height)
 
         If margin.IsEmpty Then
-            margin = New Size(100, 50)
+            margin = New Size(100, 150)
         End If
 
         Dim log As Func(Of Double, Double) = GetValueMethod(ylog)
         Dim colorList As New Dictionary(Of String, Color)
+
+        data = data.ToArray
+
+        For Each x In data
+            If x.pvalues.ContainsKey("") Then
+                Call x.pvalues.Remove("")
+            End If
+        Next
 
         If colors.IsNullOrEmpty Then
             Dim charts = ChartColors.Shuffles
@@ -111,18 +151,23 @@ Public Module Canvas
             Dim fsz As SizeF = g.MeasureString("0", font)
             Dim sampleBrush As New Dictionary(Of String, SolidBrush)
 
+            colorPattern = colorPattern.ToLower
             g.CompositingQuality = Drawing2D.CompositingQuality.HighQuality
             g.FillRectangle(Brushes.White, New Rectangle(New Point, New Size(width, height)))
 
-            For Each name As String In serials  ' legend绘制
-                Dim br As SolidBrush = New SolidBrush(colorList(name))
+            If colorPattern <> "samplename" Then ' 不是按照样品标注颜色的，则不再绘制legend
 
-                Call g.FillRectangle(br, New Rectangle(left, h, 100, fsz.Height))
-                Call g.DrawString(name, font, Brushes.Black, New Point(left + 110, h))
+            Else
+                For Each name As String In serials  ' legend绘制
+                    Dim br As SolidBrush = New SolidBrush(colorList(name))
 
-                h += fsz.Height + 10
-                sampleBrush(name) = br
-            Next
+                    Call g.FillRectangle(br, New Rectangle(left, h, 100, fsz.Height))
+                    Call g.DrawString(If(String.IsNullOrEmpty(name), "null", name), font, Brushes.Black, New Point(left + 110, h))
+
+                    h += fsz.Height + 10
+                    sampleBrush(name) = br
+                Next
+            End If
 
             Dim gData = From x As SNP
                         In data
@@ -166,7 +211,7 @@ Public Module Canvas
 
             If ylog <> "ln" AndAlso ylog <> "log" Then
                 For iy As Double = 0 To maxY Step 0.25
-                    Dim y As Integer = height - height * (iy / maxY) - margin.Height
+                    Dim y As Integer = height - (height - 2 * margin.Height) * (iy / maxY) - margin.Height
 
                     fsz = g.MeasureString(iy, font)
 
@@ -175,7 +220,7 @@ Public Module Canvas
                 Next
             Else
                 For iy As Double = 1 To maxY
-                    Dim y As Integer = height - height * (iy / maxY) - margin.Height
+                    Dim y As Integer = height - (height - 2 * margin.Height) * (iy / maxY) - margin.Height
 
                     fsz = g.MeasureString(iy, font)
 
@@ -187,6 +232,7 @@ Public Module Canvas
             Dim labelFont As New Font(FontFace.BookmanOldStyle, 16, FontStyle.Bold)
             Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
             Dim r As Double = ptSize / 2
+            Dim odds As Boolean = True
 
             For Each chromsome In chrData
                 Dim chrName As String = chromsome.Name
@@ -210,11 +256,33 @@ Public Module Canvas
                 For Each snp As SNP In chromsome.x
                     Dim x As Integer = max * (If(relative, snp.Position - relLen.Min, snp.Position) / l) + xLeft
 
-                    For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
-                        Dim y As Integer = height - height * ((log(sample.Value)) / maxY) - margin.Height
-                        Dim label As String = $"{snp.Gene} ({sample.Key})"
+                    If colorPattern <> "chr" Then
 
-                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x - r, y - r, ptSize, ptSize), 0, 360)
+                        If snp.Position > l Then
+                            Continue For
+                        End If
+                    End If
+
+                    For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
+                        Dim y As Integer = height - (height - 2 * margin.Height) * ((log(sample.Value)) / maxY) - margin.Height
+                        Dim label As String = $"{snp.Gene} ({sample.Key})"
+                        Dim color As SolidBrush
+
+                        Select Case colorPattern
+                            Case "chr"
+                                color = ChromosomeColors(snp.Chr.ToUpper)
+                            Case "samplename"
+                                color = sampleBrush(sample.Key)
+                            Case Else
+                                If odds Then
+                                    color = __odds
+                                Else
+                                    color = __evens
+                                End If
+                        End Select
+
+                        Call g.FillPie(color, New Rectangle(x - r, y - r, ptSize, ptSize), 0, 360)
+
                         If showDebugLabel Then
                             Call g.DrawString(label,
                                               labelFont,
@@ -225,6 +293,7 @@ Public Module Canvas
                 Next
 
                 xLeft += max
+                odds = Not odds
             Next
         End Using
 

@@ -15,7 +15,9 @@ Module Program
 
     Public Function Main() As Integer
 
-        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot.SaveAs("H:\ManhattanPlot\manhattan_plot_test.png", ImageFormats.Png)
+        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="chr").SaveAs("H:\ManhattanPlot\manhattan_plot_test.png", ImageFormats.Png)
+        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="sampleName").SaveAs("H:\ManhattanPlot\manhattan_plot_test_sampleName.png", ImageFormats.Png)
+        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="interval").SaveAs("H:\ManhattanPlot\manhattan_plot_test_interval.png", ImageFormats.Png)
 
         End
 
