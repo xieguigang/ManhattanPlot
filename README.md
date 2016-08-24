@@ -9,3 +9,6 @@ It gains its name from the similarity of such a plot to the Manhattan skyline: a
 
 ## References
 + Gibson, Greg (2010). "Hints of hidden heritability in GWAS". Nature Genetics. 42 (7): 558–560. doi:10.1038/ng0710-558. PMID 20581876.
+ 
+
+![](./manhattan_plot_test.png)
