@@ -49,11 +49,20 @@ Public Module Canvas
     ''' <param name="colors">colorName/rgb(a,r,g,b)</param>
     ''' <returns></returns>
     <Extension>
-    Public Function Plot(data As IEnumerable(Of SNP), Optional width As Integer = 1024, Optional height As Integer = 768, Optional colors As String() = Nothing) As Bitmap
+    Public Function Plot(data As IEnumerable(Of SNP),
+                         Optional width As Integer = 1024,
+                         Optional height As Integer = 768,
+                         Optional colors As String() = Nothing,
+                         Optional margin As Size = Nothing) As Bitmap
+
         Dim bmp As New Bitmap(width, height)
         Dim cls As Color() = If(colors.IsNullOrEmpty,
             ColorExtensions.ChartColors.Shuffles,
             colors.ToArray(AddressOf ToColor))
+
+        If margin.IsEmpty Then
+            margin = New Size(15, 15)
+        End If
 
         Using g As Graphics = Graphics.FromImage(bmp)
             Dim serials As IEnumerable(Of String) = data.First.pvalues.Keys   ' 先绘制出系列的名称
@@ -61,11 +70,16 @@ Public Module Canvas
             Dim left As Integer = width - 200
             Dim font As New Font(FontFace.Cambria, 12, FontStyle.Regular)
             Dim fsz As SizeF = g.MeasureString("0", font)
+            Dim sampleBrush As New Dictionary(Of String, SolidBrush)
 
             For Each name As SeqValue(Of String) In serials.SeqIterator
-                Call g.FillRectangle(New SolidBrush(cls(name.i)), New Rectangle(left, h, 100, fsz.Height))
+                Dim br As SolidBrush = New SolidBrush(cls(name.i))
+
+                Call g.FillRectangle(br, New Rectangle(left, h, 100, fsz.Height))
                 Call g.DrawString(name.obj, font, Brushes.Black, New Point(left + 110, h))
+
                 h += fsz.Height
+                sampleBrush(name.obj) = br
             Next
 
             Dim gData = From x As SNP
@@ -90,25 +104,28 @@ Public Module Canvas
                     }
             Next
 
-            Dim xLeft As Integer = 0
+            Dim xLeft As Integer = margin.Width
             Dim maxY As Double = chrData _
                 .Select(Function(x) x.x _
                 .Select(Function(o) o.pvalues.Values) _
                 .MatrixAsIterator) _
                 .MatrixAsIterator _
                 .Where(Function(n) Not Double.IsNaN(n)).Min  ' pvalue越小则-log越大
-            maxY = -Math.Log(maxY) + 1.5
+            maxY = -Math.Log(maxY) + 1
+
+            ' 绘制X轴
+            Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(width - margin.Width, height - margin.Height))
 
             For Each chromsome In chrData
                 Dim l As Integer = Chromosomes(chromsome.Name)
-                Dim max As Integer = width * (l / total)  '  最大的长度
+                Dim max As Integer = (width - 2 * margin.Width) * (l / total)  '  最大的长度
 
                 For Each snp As SNP In chromsome.x
                     Dim x As Integer = max * (snp.Position / l) + xLeft
 
                     For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
-                        Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY)
-                        Call g.FillPie(Brushes.Brown, New Rectangle(x, y, 10, 10), 0, 360)
+                        Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY) - 2 * margin.Height
+                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x, y, 10, 10), 0, 360)
                     Next
                 Next
 
