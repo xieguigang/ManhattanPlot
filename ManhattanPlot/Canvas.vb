@@ -52,7 +52,7 @@ Public Module Canvas
     Public Function Plot(data As IEnumerable(Of SNP),
                          Optional width As Integer = 3000,
                          Optional height As Integer = 1440,
-                         Optional colors As String() = Nothing,
+                         Optional colors As Dictionary(Of String, String) = Nothing,
                          Optional margin As Size = Nothing,
                          Optional ptSize As Integer = 10,
                          Optional showDebugLabel As Boolean = False,
@@ -60,12 +60,23 @@ Public Module Canvas
                          Optional relative As Boolean = True) As Bitmap
 
         Dim bmp As New Bitmap(width, height)
-        Dim cls As Color() = If(colors.IsNullOrEmpty,
-            ColorExtensions.ChartColors.Shuffles,
-            colors.ToArray(AddressOf ToColor))
 
         If margin.IsEmpty Then
-            margin = New Size(15, 25)
+            margin = New Size(100, 50)
+        End If
+
+        Dim colorList As New Dictionary(Of String, Color)
+
+        If colors.IsNullOrEmpty Then
+            Dim charts = ChartColors.Shuffles
+
+            For Each tag As SeqValue(Of String) In data.First.pvalues.Keys.SeqIterator
+                colorList(tag.obj) = charts(tag.i)
+            Next
+        Else
+            For Each x In colors
+                colorList(x.Key) = x.Value.ToColor
+            Next
         End If
 
         Using g As Graphics = Graphics.FromImage(bmp)
@@ -79,14 +90,14 @@ Public Module Canvas
             g.CompositingQuality = Drawing2D.CompositingQuality.HighQuality
             g.FillRectangle(Brushes.White, New Rectangle(New Point, New Size(width, height)))
 
-            For Each name As SeqValue(Of String) In serials.SeqIterator   ' legend绘制
-                Dim br As SolidBrush = New SolidBrush(cls(name.i))
+            For Each name As String In serials  ' legend绘制
+                Dim br As SolidBrush = New SolidBrush(colorList(name))
 
                 Call g.FillRectangle(br, New Rectangle(left, h, 100, fsz.Height))
-                Call g.DrawString(name.obj, font, Brushes.Black, New Point(left + 110, h))
+                Call g.DrawString(name, font, Brushes.Black, New Point(left + 110, h))
 
                 h += fsz.Height + 10
-                sampleBrush(name.obj) = br
+                sampleBrush(name) = br
             Next
 
             Dim gData = From x As SNP
@@ -135,6 +146,8 @@ Public Module Canvas
             Dim labelFont As New Font(FontFace.BookmanOldStyle, 4)
             Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
 
+            font = New Font(FontFace.MicrosoftYaHei, 24, FontStyle.Regular)
+
             For Each chromsome In chrData
                 Dim relLen As Integer() = chromsome.x.ToArray(Function(x) x.Position)
                 Dim l As Integer = If(relative, relLen.Max - relLen.Min, Chromosomes(chromsome.Name))
@@ -146,7 +159,7 @@ Public Module Canvas
 
                 g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Height), New Point(xLeft + max, height - margin.Height - 5))
                 fsz = g.MeasureString(chromsome.Name, font)
-                g.DrawString(chromsome.Name, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 5))
+                g.DrawString(chromsome.Name, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 15))
 
                 For Each snp As SNP In chromsome.x
                     Dim x As Integer = max * (If(relative, snp.Position - relLen.Min, snp.Position) / l) + xLeft
