@@ -1,4 +1,7 @@
-﻿Imports Microsoft.VisualBasic.Language
+﻿Imports System.Runtime.CompilerServices
+Imports Microsoft.VisualBasic.Imaging
+Imports Microsoft.VisualBasic.Language
+Imports Microsoft.VisualBasic.Linq
 
 Public Module Canvas
 
@@ -35,8 +38,36 @@ Public Module Canvas
         {"Y", 57227415}
     }
 
-    Public Function Plot() As Image
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="data"></param>
+    ''' <param name="width"></param>
+    ''' <param name="height"></param>
+    ''' <param name="colors">colorName/rgb(a,r,g,b)</param>
+    ''' <returns></returns>
+    <Extension>
+    Public Function Plot(data As IEnumerable(Of SNP), Optional width As Integer = 1024, Optional height As Integer = 768, Optional colors As String() = Nothing) As Bitmap
+        Dim bmp As New Bitmap(width, height)
+        Dim cls As Color() = If(colors.IsNullOrEmpty,
+            ColorExtensions.ChartColors.Shuffles,
+            colors.ToArray(AddressOf ToColor))
 
+        Using g As Graphics = Graphics.FromImage(bmp)
+            Dim serials As IEnumerable(Of String) = data.First.pvalues.Keys   ' 先绘制出系列的名称
+            Dim h As Integer = 0
+            Dim left As Integer = width - 200
+            Dim font As New Font(FontFace.Cambria, 12, FontStyle.Regular)
+            Dim fsz As SizeF = g.MeasureString("0", font)
+
+            For Each name As SeqValue(Of String) In serials.SeqIterator
+                Call g.FillRectangle(New SolidBrush(cls(name.i)), New Rectangle(left, h, 100, fsz.Height))
+                Call g.DrawString(name.obj, font, Brushes.Black, New Point(left + 110, h))
+                h += fsz.Height
+            Next
+        End Using
+
+        Return bmp
     End Function
 End Module
 
