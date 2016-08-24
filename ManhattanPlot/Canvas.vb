@@ -53,7 +53,10 @@ Public Module Canvas
                          Optional width As Integer = 3000,
                          Optional height As Integer = 1440,
                          Optional colors As String() = Nothing,
-                         Optional margin As Size = Nothing) As Bitmap
+                         Optional margin As Size = Nothing,
+                         Optional ptSize As Integer = 10,
+                         Optional showDebugLabel As Boolean = False,
+                         Optional equidistant As Boolean = False) As Bitmap
 
         Dim bmp As New Bitmap(width, height)
         Dim cls As Color() = If(colors.IsNullOrEmpty,
@@ -127,11 +130,12 @@ Public Module Canvas
                 Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
             Next
 
-            Dim labelFont As New Font(FontFace.BookmanOldStyle, 8)
+            Dim labelFont As New Font(FontFace.BookmanOldStyle, 4)
+            Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
 
             For Each chromsome In chrData
                 Dim l As Integer = Chromosomes(chromsome.Name)
-                Dim max As Integer = (width - 2 * margin.Width) * (l / total)  '  最大的长度
+                Dim max As Integer = If(equidistant, ed, (width - 2 * margin.Width) * (l / total))  '  最大的长度
 
                 g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Height), New Point(xLeft + max, height - margin.Height - 5))
                 fsz = g.MeasureString(chromsome.Name, font)
@@ -144,8 +148,13 @@ Public Module Canvas
                         Dim y As Integer = height - height * ((-Math.Log(sample.Value)) / maxY) - 2 * margin.Height
                         Dim label As String = $"{snp.Gene} ({sample.Key})"
 
-                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x, y, 20, 20), 0, 360)
-                        Call g.DrawString(label, labelFont, Brushes.LightGray, New Point(x + 22, y + 10))
+                        Call g.FillPie(sampleBrush(sample.Key), New Rectangle(x, y, ptSize, ptSize), 0, 360)
+                        If showDebugLabel Then
+                            Call g.DrawString(label,
+                                              labelFont,
+                                              Brushes.LightGray,
+                                              New Point(x + ptSize + 3, y + 10))
+                        End If
                     Next
                 Next
 
