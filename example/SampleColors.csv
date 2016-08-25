@@ -1,2 +1,7 @@
-﻿SampleName,Color
-,
+SampleName,Color
+sample1,"rgb(198,34,43)"
+sample2,"rgb(34,66,153)"
+sample3,"rgb(39,180,76)"
+sample4,"rgb(199,192,50)"
+sample5,"rgb(164,55,148)"
+sample6,"rgb(64,64,64)"

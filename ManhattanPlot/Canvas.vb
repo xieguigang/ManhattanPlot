@@ -37,7 +37,7 @@ Public Module Canvas
         {"21", 48129895},
         {"22", 51304566},
         {"X", 156040895}, {"23", 156040895},
-        {"Y", 57227415}, {"24", 156040895}
+        {"Y", 57227415}, {"24", 57227415}
     }
 
     Public ReadOnly Property ChromosomeColors As New Dictionary(Of String, SolidBrush) From {

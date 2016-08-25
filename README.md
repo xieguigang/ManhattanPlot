@@ -67,7 +67,7 @@ Canvas.Plot(System.Collections.Generic.IEnumerable(Of ManhattanPlot.SNP), Intege
 Dim image As Bitmap = data.Plot(colorPattern:="chr")
 Call image.SaveAs("./manhattan_plot_test.png", ImageFormats.Png)
 ```
-![](./example/manhattan_plot_test.png)
+![](./example/manhattan_plot_test_chr.png)
 
 
 ```vbnet

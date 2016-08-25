@@ -62,7 +62,7 @@ Module Program
         Return GetType(Program).RunCLI(App.CommandLine)
     End Function
 
-    <ExportAPI("/Draw", Usage:="/Draw /in <data.csv> [/out <out.png> /sampleColors <sample_colors.csv> /width 3000 /height 1440 /pt.size 25 /debug.label /equidistant /relative /ylog <ln/log/raw, default:=ln> /colorPattern <chr/sampleName/interval, default:=chr>]",
+    <ExportAPI("/Draw", Usage:="/Draw /in <data.csv> [/out <out.png> /sampleColors <sample_colors.csv> /width 3000 /height 1440 /pt.size 10 /debug.label /equidistant /relative /ylog <ln/log/raw, default:=ln> /colorPattern <chr/sampleName/interval, default:=chr>]",
                Info:="Invoke the Manhattan plots for the SNP sites.",
                Example:="/Draw /in ./manhattan_plot_test.csv /out ./manhattan_plot_test.png")>
     <ParameterInfo("/in", False, AcceptTypes:={GetType(SNP())})>
@@ -81,7 +81,7 @@ Module Program
         Dim sampleColors As String = args("/sampleColors")
         Dim w As Integer = args.GetValue("/width", 3000)
         Dim h As Integer = args.GetValue("/height", 1440)
-        Dim ptSize As Integer = args.GetValue("/pt.size", 25)
+        Dim ptSize As Integer = args.GetValue("/pt.size", 10)
         Dim debug As Boolean = args.GetBoolean("/debug.label")
         Dim eqdist As Boolean = args.GetBoolean("/equidistant")
         Dim rel As Boolean = args.GetBoolean("/relative")
@@ -91,9 +91,10 @@ Module Program
         Dim data As IEnumerable(Of SNP) = [in].LoadCsv(Of SNP)
         Dim samples As Dictionary(Of String, String) = Nothing
         If sampleColors.FileExists Then
-            samples = sampleColors.LoadCsv(Of SampleColor) _
-                .ToDictionary(Function(x) x.SampleName,
-                              Function(x) x.Color)
+            Dim colors = sampleColors.LoadCsv(Of SampleColor)
+            samples = colors.ToDictionary(
+                Function(x) x.SampleName,
+                Function(x) x.Color)
         End If
         Dim image As Bitmap = data.Plot(w, h, samples,, ptSize, debug, eqdist, rel, ylog, cptn)
         Return image.SaveAs(out, ImageFormats.Png).CLICode
