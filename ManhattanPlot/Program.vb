@@ -66,7 +66,16 @@ Module Program
                Info:="Invoke the Manhattan plots for the SNP sites.",
                Example:="/Draw /in ./manhattan_plot_test.csv /out ./manhattan_plot_test.png")>
     <ParameterInfo("/in", False, AcceptTypes:={GetType(SNP())})>
-    <ParameterInfo("/sampleColors", True, AcceptTypes:={GetType(SampleColor())})>
+    <ParameterInfo("/sampleColors", True, AcceptTypes:={GetType(SampleColor())},
+                   Description:="Color expression supports both .NET known color name and rgb expression.
+
++ .NET known color names: https://github.com/xieguigang/VisualBasic_AppFramework/blob/master/VB.NET_Colors.html
++ rgb expressions: ``rgb(r,g,b)`` or ``rgb(a,r,g,b)``, parameters ``a,r,g,b`` each value should less than 256, that is value ranges from 0 to 255")>
+    <ParameterInfo("/ylog", True, AcceptTypes:={GetType(String)},
+                   Description:="
++ ``ln``, for ``-ln(p-value)``, log value on base ``e``
++ ``log``, for ``-log(p-value, 10)``, log value on base 10
++ ``raw``, for raw value, no transformation.")>
     Public Function Draw(args As CommandLine) As Integer
         Dim [in] As String = args("/in")
         Dim sampleColors As String = args("/sampleColors")

@@ -13,7 +13,7 @@ It gains its name from the similarity of such a plot to the Manhattan skyline: a
 
 ## Using the code
 
-First, peeks of the test data. By using **[``sampleTest.R``](./sampleTest.R)** script for generates the test data set.
+First, peeks of the test data. By using **[``sampleTest.R``](./docs/sampleTest.R)** script for generates the test data set.
 
 ```R
 # 生成测试数据集
@@ -67,18 +67,18 @@ Canvas.Plot(System.Collections.Generic.IEnumerable(Of ManhattanPlot.SNP), Intege
 Dim image As Bitmap = data.Plot(colorPattern:="chr")
 Call image.SaveAs("./manhattan_plot_test.png", ImageFormats.Png)
 ```
-![](./manhattan_plot_test.png)
+![](./example/manhattan_plot_test.png)
 
 
 ```vbnet
 Dim image As Bitmap = data.Plot(colorPattern:="sampleName")
 Call image.SaveAs("./manhattan_plot_test_sampleName.png", ImageFormats.Png)
 ```
-![](./manhattan_plot_test_sampleName.png)
+![](./example/manhattan_plot_test_sampleName.png)
 
 
 ```vbnet
 Dim image As Bitmap = data.Plot(colorPattern:="interval")
 Call image.SaveAs("./manhattan_plot_test_interval.png", ImageFormats.Png)
 ```
-![](./manhattan_plot_test_interval.png)
+![](./example/manhattan_plot_test_interval.png)
