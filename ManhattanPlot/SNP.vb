@@ -9,3 +9,8 @@ Public Class SNP : Inherits ClassObject
     Public Property pvalues As Dictionary(Of String, Double)
 
 End Class
+
+Public Class SampleColor
+    Public Property SampleName As String
+    Public Property Color As String
+End Class
