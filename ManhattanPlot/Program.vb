@@ -15,37 +15,36 @@ Module Program
 
     Public Function Main() As Integer
 
-        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="chr").SaveAs("H:\ManhattanPlot\manhattan_plot_test.png", ImageFormats.Png)
-        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="sampleName").SaveAs("H:\ManhattanPlot\manhattan_plot_test_sampleName.png", ImageFormats.Png)
-        Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="interval").SaveAs("H:\ManhattanPlot\manhattan_plot_test_interval.png", ImageFormats.Png)
+        'Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="chr").SaveAs("H:\ManhattanPlot\manhattan_plot_test.png", ImageFormats.Png)
+        'Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="sampleName").SaveAs("H:\ManhattanPlot\manhattan_plot_test_sampleName.png", ImageFormats.Png)
+        'Call "H:\ManhattanPlot\manhattan_plot_test.csv".LoadCsv(Of SNP).Plot(colorPattern:="interval").SaveAs("H:\ManhattanPlot\manhattan_plot_test_interval.png", ImageFormats.Png)
 
-        End
+        'End
 
-        Dim label As Boolean = False
-        Dim eq As Boolean = False
-        Dim data = "C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.csv".LoadCsv(Of SNP)
-        Dim method As String = "asdadg"
-        Dim colors As New Dictionary(Of String, String) From {
-            {"GMAF", "Red"},
-            {"AFR vs. AMR", "DeepSkyBlue"},
-            {"EAS vs. AFR", "Cyan"},
-            {"EAS vs. AMR", "Chocolate"}
-        }
-        Dim img = data.Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method)
-        Call img.SaveAs("C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.png", ImageFormats.Png)
+        'Dim label As Boolean = False
+        'Dim eq As Boolean = False
+        'Dim data = "C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.csv".LoadCsv(Of SNP)
+        'Dim method As String = "asdadg"
+        'Dim colors As New Dictionary(Of String, String) From {
+        '    {"GMAF", "Red"},
+        '    {"AFR vs. AMR", "DeepSkyBlue"},
+        '    {"EAS vs. AFR", "Cyan"},
+        '    {"EAS vs. AMR", "Chocolate"}
+        '}
+        'Dim img = data.Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method)
+        'Call img.SaveAs("C:\Users\xieguigang\Desktop\8.23\Manhattan_Plots.png", ImageFormats.Png)
 
-        Call "C:\Users\xieguigang\Desktop\8.23\sp\AFR vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\AFR vs. AMR.png", ImageFormats.Png)
-        Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.png", ImageFormats.Png)
-        Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.png", ImageFormats.Png)
-        Call "C:\Users\xieguigang\Desktop\8.23\sp\GMAF.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\GMAF.png", ImageFormats.Png)
+        'Call "C:\Users\xieguigang\Desktop\8.23\sp\AFR vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\AFR vs. AMR.png", ImageFormats.Png)
+        'Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AFR.png", ImageFormats.Png)
+        'Call "C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\EAS vs. AMR.png", ImageFormats.Png)
+        'Call "C:\Users\xieguigang\Desktop\8.23\sp\GMAF.csv".LoadCsv(Of SNP).Plot(equidistant:=eq, colors:=colors, ptSize:=25, showDebugLabel:=label, ylog:=method).SaveAs("C:\Users\xieguigang\Desktop\8.23\sp\GMAF.png", ImageFormats.Png)
 
-
-
-        Pause()
+        'Pause()
         Return GetType(Program).RunCLI(App.CommandLine)
     End Function
 
     <ExportAPI("/Draw", Usage:="/Draw /in <data.csv> [/out <out.png>]")>
+    <ParameterInfo("/in", False, AcceptTypes:={GetType(SNP())})>
     Public Function Draw(args As CommandLine) As Integer
 
     End Function
