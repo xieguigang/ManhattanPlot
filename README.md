@@ -1,7 +1,20 @@
 # ManhattanPlot
-Manhattan plot in VisualBasic
+Manhattan plot in VisualBasic, application of the cross platform VisualBasic in the data science area.
+
+For start the further development, install the Microsoft VisualBasic CLI runtime first:
+
+```bash
+PM> Install-Package VB_AppFramework
+```
+
+and then add reference to the dll files:
+
++ Microsoft.VisualBasic.Architecture.Framework_v3.0_22.0.76.201__8da45dcd8060cc9a.dll
++ Microsoft.VisualBasic.DocumentFormat.Csv.dll
 
 ## [Manhattan plot](https://en.wikipedia.org/wiki/Manhattan_plot)
+
+> wiki: https://en.wikipedia.org/wiki/Manhattan_plot
 
 A Manhattan plot is a type of scatter plot, usually used to display data with a large number of data-points - many of non-zero amplitude, and with a distribution of higher-magnitude values, for instance in genome-wide association studies (GWAS).[1] In GWAS Manhattan plots, genomic coordinates are displayed along the X-axis, with the negative logarithm of the association P-value for each single nucleotide polymorphism (SNP) displayed on the Y-axis, meaning that each dot on the Manhattan plot signifies a SNP. Because the strongest associations have the smallest P-values (e.g., 10−15), their negative logarithms will be the greatest (e.g., 15).
 
@@ -63,6 +76,12 @@ Canvas.Plot(System.Collections.Generic.IEnumerable(Of ManhattanPlot.SNP), Intege
 
 #### Color patterns
 
+Save image method extension required of imports namespace:
+
+```vbnet
+Imports Microsoft.VisualBasic.Imaging
+```
+
 ```vbnet
 Dim image As Bitmap = data.Plot(colorPattern:="chr")
 Call image.SaveAs("./manhattan_plot_test.png", ImageFormats.Png)
@@ -82,3 +101,20 @@ Dim image As Bitmap = data.Plot(colorPattern:="interval")
 Call image.SaveAs("./manhattan_plot_test_interval.png", ImageFormats.Png)
 ```
 ![](./example/manhattan_plot_test_interval.png)
+
+## Test on Linux
+This program have been test successfully on the Ubuntu Linux system and Windows10, here is the test script example that you can found in the demo ``Resources`` folder:
+
+```bash
+#!/bin/bash
+
+rm ./manhattan_plot_test_chr.png
+rm ./manhattan_plot_test_interval.png
+rm ./manhattan_plot_test_SampleName.png
+
+../ManhattanPlot.exe /Draw /in "./manhattan_plot_test.csv" /pt.size 10 /sampleColors "./SampleColors.csv" /colorpattern SampleName
+../ManhattanPlot.exe /Draw /in "./manhattan_plot_test.csv" /pt.size 10 /colorpattern chr
+../ManhattanPlot.exe /Draw /in "./manhattan_plot_test.csv" /pt.size 10 /colorpattern interval
+```
+
+![](./docs/Linux_bash.png)
