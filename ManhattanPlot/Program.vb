@@ -20,13 +20,13 @@ It gains its name from the similarity of such a plot to the Manhattan skyline: a
 Module Program
 
     Sub New()
-        Dim template As String = App.HOME & "/Template.csv"
+        Dim template As String = App.HOME & "/Templates/Template.csv"
 
         If Not template.FileExists Then
             Call {New SNP}.SaveTo(template)
         End If
 
-        template = App.HOME & "/SampleColors.csv"
+        template = App.HOME & "/Templates/SampleColors.csv"
         If Not template.FileExists Then
             Call {New SampleColor}.SaveTo(template)
         End If
