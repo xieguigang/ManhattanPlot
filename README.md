@@ -4,10 +4,10 @@
 
 Manhattan plot in VisualBasic, application of the cross platform VisualBasic in the data science area.
 
-For start the further development, install the Microsoft VisualBasic CLI runtime first:
+For start the further development, install the **sciBASIC** runtime via nuget at first:
 
 ```bash
-PM> Install-Package VB_AppFramework
+PM> Install-Package sciBASIC
 ```
 
 and then add reference to the dll files:
