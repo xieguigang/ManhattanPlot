@@ -1,11 +1,14 @@
-﻿Imports System.Drawing.Drawing2D
+﻿Imports System.Drawing
+Imports System.Drawing.Drawing2D
 Imports System.Runtime.CompilerServices
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Extensions
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.Drawing2D
+Imports Microsoft.VisualBasic.Imaging.Driver
 Imports Microsoft.VisualBasic.Language
 Imports Microsoft.VisualBasic.Linq
+Imports Microsoft.VisualBasic.MIME.Html.CSS
 
 ''' <summary>
 ''' The ``Manhattan Plot`` canvas
@@ -111,21 +114,21 @@ Public Module Canvas
                          Optional width As Integer = 3000,
                          Optional height As Integer = 1440,
                          Optional colors As Dictionary(Of String, String) = Nothing,
-                         Optional margin As Size = Nothing,
+                         Optional margin As Padding = Nothing,
                          Optional ptSize As Integer = 10,
                          Optional showDebugLabel As Boolean = False,
                          Optional equidistant As Boolean = False,
                          Optional relative As Boolean = False,
                          Optional ylog As String = "ln",
                          Optional colorPattern As String = "chr",
-                         Optional bg$ = "white") As Bitmap
+                         Optional bg$ = "white") As GraphicsData
 
         Dim log As Func(Of Double, Double) = GetValueMethod(ylog)
         Dim colorList As New Dictionary(Of String, Color)
 
         data = data.ToArray
 
-        For Each x In data
+        For Each x As SNP In data
             If x.pvalues.ContainsKey("") Then
                 Call x.pvalues.Remove("")
             End If
@@ -138,7 +141,7 @@ Public Module Canvas
                 colorList(tag.value) = charts(tag.i)
             Next
         Else
-            For Each x In colors
+            For Each x As KeyValuePair(Of String, String) In colors
                 colorList(x.Key) = x.Value.ToColor
             Next
         End If
@@ -156,15 +159,15 @@ Public Module Canvas
 
     <Extension>
     Private Sub __plotInternal(data As SNP(),
-                               ByRef g As Graphics, region As GraphicsRegion,
-                               margin As Size, width!, height!,
+                               ByRef g As IGraphics, region As GraphicsRegion,
+                               margin As Padding, width!, height!,
                                colorPattern$, colorList As Dictionary(Of String, Color),
                                relative As Boolean, log As Func(Of Double, Double), ylog$,
                                ptSize%, equidistant As Boolean,
                                showDebugLabel As Boolean)
 
         Dim serials As IEnumerable(Of String) = data.First.pvalues.Keys   ' 先绘制出系列的名称
-        Dim h As Integer = margin.Height
+        Dim h As Integer = margin.Top + margin.Bottom
         Dim left As Integer = width - 300
         Dim font As New Font(FontFace.MicrosoftYaHei, 12, FontStyle.Regular)
         Dim fsz As SizeF = g.MeasureString("0", font)
@@ -203,9 +206,9 @@ Public Module Canvas
 
         For Each chromsome In gData
             Dim id As String = chromsome.Chr.ToUpper
-            Dim relLen As Integer() = chromsome _
-                .Group _
-                .ToArray(Function(x) x.Position)
+            Dim relLen As Integer() = chromsome.Group _
+                .Select(Function(x) x.Position) _
+                .ToArray
 
             total += If(relative, relLen.Max - relLen.Min, Canvas.Chromosomes(id))
             chrData += New NamedValue(Of SNP()) With {
@@ -217,7 +220,7 @@ Public Module Canvas
             }
         Next
 
-        Dim xLeft As Integer = margin.Width
+        Dim xLeft As Integer = margin.Left
         Dim maxY As Double = chrData _
             .Select(Function(x) x.Value _
             .Select(Function(o) o.pvalues.Values) _
@@ -230,40 +233,40 @@ Public Module Canvas
         ylog = ylog.ToLower
 
         ' 绘制X轴
-        Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(width - margin.Width, height - margin.Height))
+        Call g.DrawLine(Pens.Black, New Point(margin.Left, height - margin.Top), New Point(width - margin.Left, height - margin.Top))
         ' 绘制y轴
-        Call g.DrawLine(Pens.Black, New Point(margin.Width, height - margin.Height), New Point(margin.Width, margin.Height))
+        Call g.DrawLine(Pens.Black, New Point(margin.Left, height - margin.Top), New Point(margin.Left, margin.Top))
 
         If ylog <> "ln" AndAlso ylog <> "log" Then
             For iy As Double = 0 To maxY Step 0.25
-                Dim y As Integer = height - (height - 2 * margin.Height) * (iy / maxY) - margin.Height
+                Dim y As Integer = height - (height - 2 * margin.Top) * (iy / maxY) - margin.Top
 
                 fsz = g.MeasureString(iy, font)
 
-                Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
+                Call g.DrawLine(Pens.Black, New Point(margin.Left, y), New Point(margin.Left - 4, y))
                 Call g.DrawString(iy, font, Brushes.Black, New Point(15, y - fsz.Height / 2))
             Next
         Else
             For iy As Double = 1 To maxY
-                Dim y As Integer = height - (height - 2 * margin.Height) * (iy / maxY) - margin.Height
+                Dim y As Integer = height - (height - 2 * margin.Top) * (iy / maxY) - margin.Top
 
                 fsz = g.MeasureString(iy, font)
 
-                Call g.DrawLine(Pens.Black, New Point(margin.Width, y), New Point(margin.Width - 4, y))
+                Call g.DrawLine(Pens.Black, New Point(margin.Left, y), New Point(margin.Left - 4, y))
                 Call g.DrawString(iy, font, Brushes.Black, New Point(25, y - fsz.Height / 2))
             Next
         End If
 
         Dim labelFont As New Font(FontFace.BookmanOldStyle, 16, FontStyle.Bold)
-        Dim ed As Integer = (width - 2 * margin.Width) / chrData.Count
+        Dim ed As Integer = (width - 2 * margin.Left) / chrData.Count
         Dim r As Double = ptSize / 2
         Dim odds As Boolean = True
 
         For Each chromsome In chrData
             Dim chrName As String = chromsome.Name
-            Dim relLen As Integer() = chromsome.Value.ToArray(Function(x) x.Position)
+            Dim relLen As Integer() = chromsome.Value.Select(Function(x) x.Position).ToArray
             Dim l As Integer = If(relative, relLen.Max - relLen.Min, Chromosomes(chrName))
-            Dim max As Integer = If(equidistant, ed, (width - 2 * margin.Width) * (l / total))  '  最大的长度
+            Dim max As Integer = If(equidistant, ed, (width - 2 * margin.Left) * (l / total))  '  最大的长度
 
             If l = 0 AndAlso relLen.Length = 1 Then
                 l = relLen(Scan0)
@@ -274,9 +277,9 @@ Public Module Canvas
                 chrName = "Y"
             End If
 
-            g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Height), New Point(xLeft + max, height - margin.Height - 5))
+            g.DrawLine(Pens.Black, New Point(xLeft + max, height - margin.Top), New Point(xLeft + max, height - margin.Top - 5))
             fsz = g.MeasureString(chrName, font)
-            g.DrawString(chrName, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Height + 15))
+            g.DrawString(chrName, font, Brushes.Black, New Point(xLeft + (max - fsz.Width) / 2, height - margin.Top + 15))
 
             For Each snp As SNP In chromsome.Value
                 Dim x As Integer = max * (If(relative, snp.Position - relLen.Min, snp.Position) / l) + xLeft
@@ -289,7 +292,7 @@ Public Module Canvas
                 End If
 
                 For Each sample In snp.pvalues.Where(Function(n) Not Double.IsNaN(n.Value))
-                    Dim y As Integer = height - (height - 2 * margin.Height) * ((log(sample.Value)) / maxY) - margin.Height
+                    Dim y As Integer = height - (height - 2 * margin.Top) * ((log(sample.Value)) / maxY) - margin.Top
                     Dim label As String = $"{snp.Gene} ({sample.Key})"
                     Dim color As SolidBrush
 

@@ -1,6 +1,6 @@
 ﻿Imports Microsoft.VisualBasic.Language
 
-Public Class SNP : Inherits ClassObject
+Public Class SNP
 
     Public Property SNP As String
     Public Property Chr As String

@@ -1,10 +1,11 @@
-﻿Imports Microsoft.VisualBasic.CommandLine
+﻿Imports System.Drawing
+Imports Microsoft.VisualBasic.CommandLine
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Data.csv
 Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Scripting.MetaData
 
-<PackageNamespace("Manhattan.Plot",
+<Package("Manhattan.Plot",
                   Description:="
 ### ManhattanPlot
 Manhattan plot in VisualBasic
@@ -82,9 +83,9 @@ Module Program
         Dim w As Integer = args.GetValue("/width", 3000)
         Dim h As Integer = args.GetValue("/height", 1440)
         Dim ptSize As Integer = args.GetValue("/pt.size", 10)
-        Dim debug As Boolean = args.GetBoolean("/debug.label")
-        Dim eqdist As Boolean = args.GetBoolean("/equidistant")
-        Dim rel As Boolean = args.GetBoolean("/relative")
+        Dim debug As Boolean = args("/debug.label")
+        Dim eqdist As Boolean = args("/equidistant")
+        Dim rel As Boolean = args("/relative")
         Dim ylog As String = args.GetValue("/ylog", "ln")
         Dim cptn As String = args.GetValue("/colorPattern", "chr")
         Dim out As String = args.GetValue("/out", [in].TrimSuffix & "_" & cptn & ".png")
@@ -96,7 +97,7 @@ Module Program
                 Function(x) x.SampleName,
                 Function(x) x.Color)
         End If
-        Dim image As Bitmap = data.Plot(w, h, samples,, ptSize, debug, eqdist, rel, ylog, cptn)
+        Dim image As Image = data.Plot(w, h, samples,, ptSize, debug, eqdist, rel, ylog, cptn).AsGDIImage
         Return image.SaveAs(out, ImageFormats.Png).CLICode
     End Function
 End Module
