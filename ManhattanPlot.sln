@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26206.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ManhattanPlot", "ManhattanPlot\ManhattanPlot.vbproj", "{B8AE7DB5-756F-4F40-AC99-D4067060AD57}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "ManhattanPlot", "ManhattanPlot\ManhattanPlot.vbproj", "{B8AE7DB5-756F-4F40-AC99-D4067060AD57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "framework", "framework", "{E27C49C7-0C64-46E8-A354-B816A1A6C2D0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
